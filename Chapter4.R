@@ -92,5 +92,6 @@ data;data_scatter;data_zscore;data_dot
 
 
 
-
+#4-3
+getwd()
 
