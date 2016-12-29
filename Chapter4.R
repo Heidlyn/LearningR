@@ -9,6 +9,11 @@ setwd("G:\\华工研究生\\学习教程\\R语言数据分析与挖掘实战\\�
 #load("G:\\华工研究生\\学习教程\\R语言数据分析与挖掘实战/图书配套数据、代码\\chapter4\\示例程序\\.RData")
 
 
+ls() 
+rm(list = ls())
+
+
+
 #4-1 P43
 inputfile = read.csv('./data/catering_sale.csv',he=T)
 inputfile<-data.frame(sales=inputfile$'销量',date=inputfile$'日期')
@@ -48,11 +53,23 @@ result2 <- rbind(inputfile1,inputfile2)
 
 
 #
-model <- lm(sales~date,date=inputfile1)  ####报错
+model <- lm(sales~date, date=inputfile)  ####报错
+inputfile2$sales <- predict(model,inputfile2)
 
 
-#ls() 
-#rm(list = ls())
+
+#多重插补
+install.packages('mice')
+library(lattice)
+library(MASS)
+library(nnet)
+library(mice)
+
+imp <- mice(inputfile,m=4)
+fit <- with(imp, lm(sales~date, data=inputfile))
+pooled <- pool(fit)
+summary(pooled)
+result4 <- complete(imp,action=3)
 
 
 
@@ -96,7 +113,75 @@ options(digits = 4)
 data;data_scatter;data_zscore;data_dot
 
 
+###################################
+#4-3 数据离散华
 
-#4-3
-getwd()
+data <- read.csv('./data/discretization_data.csv',header=T)
 
+
+#等宽离散化
+v1 <- ceiling(data[,1]*10)
+
+#等频离散化
+names(data) <- 'f' #
+attach(data)
+seq(0,length(f),length(f)/6)
+v <- sort(f)
+v2 <- rep(0,930)
+for(i in 1:930) v2[i] <- ifelse(f[i] <= v[155],1,
+                                ifelse(f[i] <= v[310],2,
+                                       ifelse(f[i] <= v[465],3,
+                                              ifelse(f[i] <= v[620],4,
+                                                     ifelse(f[i] <= v[775],5,6)))))
+detach(data)
+
+
+#聚类离散化
+result <- kmeans(data,6)
+v3 <- result$cluster
+
+
+#图示结果
+par(mfrow = c(2,2))
+plot(data[,1],v1, xlab = '肝气郁结证型系数')
+plot(data[,1],v2, xlab = '肝气郁结证型系数')
+plot(data[,1],v3, xlab = '肝气郁结证型系数')
+
+dotchart(data[,1],xlab = '肝气郁结证型系数')
+
+
+###################################
+#4-5 小波变换
+#
+N <-  1024; k <- 6
+x <- ((1:N)-N/2) *2 *pi* k/N
+y <- ifelse(x>0, sin(x), sin(3*x))
+signal <- y+rnorm(N)/10
+
+#
+install.packages("waveslim")
+library(waveslim)
+
+#
+d <- dwt(signal, n.levels=4)
+
+#
+data.frame(d$d1, d$d2, d$d3, d$d4)
+
+
+
+##########################################
+#P61 预处理主要函数
+
+#lm 回归
+x <- 1:100
+y <- 12+3*x + rnorm(100,0,9)
+data <- data.frame(x,y)
+model <-lm(y~x ,data)
+summary(model)
+  
+#predict 预测
+x <- rnorm(4,1,7)
+y <- rep(0,4)
+data1 <- data.frame(x,y)
+predict(model, data1)
