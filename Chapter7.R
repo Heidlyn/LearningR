@@ -67,3 +67,21 @@ colnames(zscoredfile) = c('ZL','ZR','ZF','ZM','ZC')
 write.csv(zscoredfile, './tmp/zscoredata.csv')
 
 
+###################################
+#7-4 k_Means 聚类算法
+
+inputfile <- read.csv('./data/zscoreddata.csv', he=T)
+
+#聚类分析
+result <- kmeans(inputfile,5)
+
+#结果输出
+
+
+type <- result$cluster
+table(type)
+centervec <- result$cluster
+
+
+
+
