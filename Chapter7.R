@@ -37,21 +37,23 @@ deletdata <- delet_na[-which(index ==1),]
 cleanedfile <- deletdata
 
 ##自己增加代码
-
 #LRFMC_src_data <- data.frame(cleanedfile$LOAD_TIME, cleanedfile$FFP_DATE,  cleanedfile$LAST_TO_END, cleanedfile$FLIGHT_COUNT, cleanedfile$SEG_KM_SUM, cleanedfile$avg_discount) 
 LRFMC_src_data <- cleanedfile[c('LOAD_TIME','FFP_DATE', 'LAST_TO_END', 'FLIGHT_COUNT', 'SEG_KM_SUM', 'avg_discount')]
 
+colna <- c('LOAD_TIME','FFP_DATE', 'LAST_TO_END', 'FLIGHT_COUNT', 'SEG_KM_SUM', 'AVG_DISCOUNT')
+colnames(LRFMC_src_data) <- colna
+
 #L <- as.numeric(LRFMC_src_data$LOAD_TIME) - as.numeric(LRFMC_src_data$FFP_DATE)
-L <- difftime(LRFMC_src_data$LOAD_TIME, LRFMC_src_data$FFP_DATE,units="days") #只能计算日期差，还可以是“secs”, “mins”, “hours”, “days”
+L <- difftime(LRFMC_src_data$LOAD_TIME, LRFMC_src_data$FFP_DATE,units="days")  #只能计算日期差，还可以是“secs”, “mins”, “hours”, “days”
 R <- LRFMC_src_data$LAST_TO_END
-F <- LRFMC_src_data$FLIGHT_COUNT
+FF <- LRFMC_src_data$FLIGHT_COUNT
 M <- LRFMC_src_data$SEG_KM_SUM
-C <- LRFMC_src_data$avg_discount
+C <- LRFMC_src_data$AVG_DISCOUNT
 
-LRFMC_data <- data.frame(L,R,F,M,C)
+LRFMC_data <- data.frame(L, R, FF, M, C)
 
-summary(LRFMC_data$R)  
-  
+summ <- summary(LRFMC_data$R)
+
 ###################################
 
 #7-3 标准化 P152
@@ -71,17 +73,22 @@ write.csv(zscoredfile, './tmp/zscoredata.csv')
 #7-4 k_Means 聚类算法
 
 inputfile <- read.csv('./data/zscoreddata.csv', he=T)
+#print(inputfile)
 
 #聚类分析
-result <- kmeans(inputfile,5)
+result <- kmeans(inputfile[,2:6],5)
 
 #结果输出
-
-
 type <- result$cluster
 table(type)
-centervec <- result$cluster
+centervec <- result$centers
 
+#sizes <- result$size
+centers <- data.frame(result$centers)
+
+install.packages('fmsb')
+library(fmsb)
+radarchart(centers)
 
 
 
