@@ -74,3 +74,27 @@ Data1.Mmean <- mean(Data1$M)
 print(Data1.Rmean)
 
 
+#########################################
+#5-5 Apriori 算法 P99
+
+library(arules)
+
+##读入数据
+#data <- read.table()
+tr <- read.transactions('./data/menu_orders.txt', format = 'basket', sep = ',')
+summary(tr)
+inspect(tr)
+
+##支持度0.2 置信度0.5
+rules0 <- apriori(tr, parameter = list(support=0.2,confidence=0.5))
+rules0
+inspect(rules0)
+
+
+#########################################
+
+
+
+
+
+
