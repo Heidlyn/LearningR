@@ -58,16 +58,65 @@ colnames(output_nnet.trainData) <- c(colnames(trainData), 'OUTPUT')
 write.csv(output_nnet.trainData, './tmp/output_nnet.trainData.csv', row.names = FALSE)
 
 ##保存神经网络模型
-save(nnet.model, file = './tmp/output_nnet.RData')
+save(nnet.model, file = './tmp/nnet.model.RData')
 
 
 ###################################
 
+#6-3 CART决策树 P140
 
+##读取数据
+trainData <- read.csv('./data/trainData.csv')
 
+##将class列转换为factor类型
+trainData <- transform(trainData, class=as.factor(class))
 
+####构建CART决策树模型
+install.packages('tree')
+library(tree)
 
+##利用tree建立CART决策树
+tree.model <- tree(class~ele_ind+loss_ind+alarm_ind, trainData)
+summary(tree.model)
 
+##画决策树图
+plot(tree.model);text(tree.model)
 
+##建立混淆矩阵
+confusion <- table(trainData$class, predict(tree.model, trainData, type = 'class'))
+accuracy <- sum(diag(confusion)*10/sum(confusion))
 
+##保存输出结果
+output_tree.trainData <- cbind(trainData, predict(tree.model, trainData, type = 'class'))
+colnames(output_tree.trainData) <- c(colnames(trainData), 'OUTPUT')
+
+write.csv(output_tree.trainData, './tmp/output_tree.trainData.csv', row.names = FALSE)
+
+##保存决策树模型
+save(tree.model, file = './tmp/tree.model.RData')
+
+###################################
+
+#6-4 测试代码 142
+
+##读取数据
+testData <- read.csv('./data/testData.csv')
+
+##读取模型
+load('./tmp/tree.model.RData')
+load('./tmp/nnet.model.RData')
+
+####ROC曲线
+install.packages('ROCR')
+library(ROCR)
+
+##画出神经网络模型的曲线
+nnet.pred <- prediction(predict(nnet.model, testData), testData$class)
+nnet.perf <- performance(nnet.pred, 'tpr', 'fpr')
+plot(nnet.perf)
+
+##画出CART决策树模型的曲线
+tree.pred <- prediction(predict(tree.model, testData)[,2], testData$class)
+tree.perf <- performance(tree.pred, 'tpr', 'fpr')
+plot(tree.perf)
 
