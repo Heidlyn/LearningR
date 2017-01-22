@@ -12,6 +12,12 @@ detach(mtcars)
 
 colors()
 
+array()
+
+data.frame()
+
+list()
+
 
 
 n <- 40 
@@ -441,4 +447,90 @@ dotchart(x$mpg, labels = row.names(x), cex = 0.7,
          gcolor = "black", color = x$color, 
          main = "Gas Milage for Car Models\ngrouped by cylinder", 
          xlab = "Miles Per Gallon")
+
+
+
+
+
+
+exp(1)
+log(exp(100))
+
+
+# Listing 5.1 -  Calculating the mean and 
+# standard deviation
+
+x <- c(1, 2, 3, 4, 5, 6, 7, 8)
+mean(x)
+sd(x)
+n <- length(x)
+meanx <- sum(x)/n
+css <- sum((x - meanx)^2)            
+sdx <- sqrt(css / (n-1))
+meanx
+sdx
+
+set.seed(100)
+x<-rnorm(5)
+
+
+
+
+# Listing 5.2 - Generating pseudo-random numbers from 
+# a uniform distribution
+
+runif(5)
+runif(5)
+set.seed(1234)                                                     
+runif(5)
+set.seed(1234)                                                      
+runif(5)
+
+# Listing 5.3 - Generating data from a multivariate 
+# normal distribution
+
+library(MASS)
+options(digits=3)
+set.seed(1234)
+
+mean <- c(230.7, 146.7, 3.6)                                           
+sigma <- matrix( c(15360.8, 6721.2, -47.1,                              
+                   6721.2, 4700.9, -16.5,
+                   -47.1,  -16.5,   0.3), nrow=3, ncol=3)
+
+mydata <- mvrnorm(500, mean, sigma)                                     
+mydata <- as.data.frame(mydata)                                         
+names(mydata) <- c("y", "x1", "x2")                                       
+
+dim(mydata)                                                             
+head(mydata, n=10)   
+
+
+
+
+
+
+# Listing 5.4 - Applying functions to data objects
+
+a <- 5
+sqrt(a)
+b <- c(1.243, 5.654, 2.99)
+round(b)
+c <- matrix(runif(12), nrow=3)
+c
+log(c)
+mean(c)
+
+# Listing 5.5 - Applying a function to the rows 
+# (columns) of a matrix
+
+library(gdata)
+
+mydata <- matrix(rnorm(30), nrow=6)
+mydata
+apply(mydata, 1, mean)     
+apply(mydata, 2, mean) 
+apply(mydata, 2, mean, trim=.4)   
+
+mean(mydata[,1])
 
