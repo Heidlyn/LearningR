@@ -534,3 +534,395 @@ apply(mydata, 2, mean, trim=.4)
 
 mean(mydata[,1])
 
+
+
+# Listing 5.6 - A solution to the learning example
+
+options(digits=2)
+
+Student <- c("John Davis", "Angela Williams", 
+             "Bullwinkle Moose", "David Jones", 
+             "Janice Markhammer", "Cheryl Cushing",
+             "Reuven Ytzrhak", "Greg Knox", "Joel England",
+             "Mary Rayburn")
+Math <- c(502, 600, 412, 358, 495, 512, 410, 625, 573, 522)
+Science <- c(95, 99, 80, 82, 75, 85, 80, 95, 89, 86)
+English <- c(25, 22, 18, 15, 20, 28, 15, 30, 27, 18)
+roster <- data.frame(Student, Math, Science, English,
+                     stringsAsFactors=FALSE)
+
+z <- scale(roster[,2:4]) 
+score <- apply(z, 1, mean)                                            
+roster <- cbind(roster, score)
+
+y <- quantile(score, c(.8,.6,.4,.2))             
+
+#roster$grade[score >= y[1]] <- "A"                                     
+#roster$grade[score < y[1] & score >= y[2]] <- "B"
+#roster$grade[score < y[2] & score >= y[3]] <- "C"
+#roster$grade[score < y[3] & score >= y[4]] <- "D"
+#roster$grade[score < y[4]] <- "F"
+
+roster <- within(roster,{
+  grade <- NA
+  grade[score >= y[1]] <- "A"   
+  grade[score < y[1] & score >= y[2]] <- "B"
+  grade[score < y[2] & score >= y[3]] <- "C"
+  grade[score < y[3] & score >= y[4]] <- "D"
+  grade[score < y[4]] <- "F"
+})
+
+
+#name <- strsplit((roster$Student), " ")    
+name <- strsplit(roster$Student, " ")   
+lastname <- sapply(name, "[", 2)
+firstname <- sapply(name, "[", 1)
+
+roster <- cbind(firstname,lastname, roster[,-1])
+roster <- roster[order(lastname,firstname),]
+
+roster
+
+sum(roster[,2])
+sum(z)
+apply(z, 2, sum )
+
+
+# Listing 5.7 - A switch example
+
+feelings <- c("sad", "afraid")
+for (i in feelings)
+  print(
+    switch(i,
+           happy  = "I am glad you are happy",
+           afraid = "There is nothing to fear",
+           sad    = "Cheer up",
+           angry  = "Calm down now"
+    )
+  )
+
+
+
+# Listing 5.8 - mystats(): a user-written function 
+# for summary statistics
+
+mystats <- function(x, parametric=TRUE, print=FALSE) {
+  if (parametric) 
+  {
+    center <- mean(x); spread <- sd(x) 
+  } 
+  else 
+  {
+    center <- median(x); spread <- mad(x) 
+  }
+  
+  if (print & parametric) 
+  {
+    cat("Mean=", center, "\n", "SD=", spread, "\n")
+  }
+  else if (print & !parametric) 
+  {
+    cat("Median=", center, "\n", "MAD=", spread, "\n")
+  }
+  
+  result <- list(center=center, spread=spread)
+  return(result)
+}
+
+# trying it out
+set.seed(1234)
+x <- rnorm(500) 
+y <- mystats(x)
+y <- mystats(x, parametric=FALSE, print=TRUE)
+
+# Another switch example
+mydate <- function(type="long") {
+  switch(type,
+         long =  format(Sys.time(), "%A %B %d %Y"), 
+         short = format(Sys.time(), "%m-%d-%y"),
+         cat(type, "is not a recognized type\n"))
+}
+mydate("long")
+mydate("short")
+mydate()
+mydate("medium")
+
+
+
+
+# Listing 5.10 - Aggregating data
+
+options(digits=3)
+attach(mtcars)
+aggdata <-aggregate(mtcars, by=list(cyl,gear), 
+                    FUN=mean, na.rm=TRUE)
+aggdata
+
+
+
+ID     <- c(1,1,2,2)
+Time   <- c(1,2,1,2)
+X1     <- c(5,3,6,2)
+X2     <- c(6,5,1,4)
+mydata <- data.frame(ID, Time, X1, X2)
+
+
+install.packages('reshape')
+
+library(reshape)
+md <- melt(mydata, id=(c('ID', 'Time')))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+vars <- c("mpg", "hp", "wt")
+head(mtcars[vars])
+
+# Listing 7.1 - descriptive stats via summary
+
+summary(mtcars[vars])
+
+sum_min <- summary(mtcars[vars])[1]
+sumchar <- strsplit(sum_min, ":")
+charr   <-  sapply(sumchar, "[", 2)
+num     <- as.double(charr)
+
+summary(mtcars)
+
+
+fivenum(mtcars[,1])
+
+# Listing 7.2 - descriptive stats via sapply()
+
+mystats <- function(x, na.omit = FALSE) {
+  if (na.omit) 
+    x <- x[!is.na(x)]
+  m <- mean(x)
+  n <- length(x)
+  s <- sd(x)
+  skew <- sum((x - m)^3/s^3)/n
+  kurt <- sum((x - m)^4/s^4)/n - 3
+  return(c(n = n, mean = m, stdev = s, skew = skew, kurtosis = kurt))
+}
+
+sapply(mtcars[vars], mystats)
+
+mystats(mtcars$mpg)
+
+
+ttt <- t(roster)
+t   <-t(ttt)
+
+
+
+# Listing 7.3 - Descriptive statistics (Hmisc package)
+#install.packages("Hmisc")
+library(Hmisc)
+describe(mtcars[vars])
+
+# Listing 7.4 - Descriptive statistics (pastecs package)
+#install.packages("pastecs")
+library(pastecs)
+stat.desc(mtcars[vars])
+
+
+# Listing 7.5 - Descriptive statistics (psych package)
+#install.packages("psych")
+library(psych)
+describe(mtcars[vars])
+
+
+# Listing 7.6 - Descriptive statistics by group with aggregate()
+
+aggregate(mtcars[vars], by = list(am = mtcars$am), mean)
+aggregate(mtcars[vars], by = list(am = mtcars$am), sd)
+
+
+# Listing 7.7 - Descriptive statistics by group via by()
+vars <- c("mpg", "hp", "wt")
+dstats <- function(x)(c(mean=mean(x), sd=sd(x)))
+by(mtcars[vars], mtcars$am, mean)
+
+
+
+# Listing 7.8 Summary statists by group (doBy package)
+#install.packages("doBy")
+library(doBy)
+summaryBy(mpg + hp + wt ~ am, data = mtcars, FUN = mystats)
+
+
+
+# Listing 7.9 - Summary statistics by group (psych package)
+
+library(psych)
+describeBy(mtcars[vars], mtcars$am)
+
+
+# Listing 7.10 Summary statistics by group (reshape package)
+
+library(reshape)
+dstats <- function(x) (c(n = length(x), mean = mean(x), 
+    sd = sd(x)))
+dfm <- melt(mtcars, measure.vars = c("mpg", "hp", 
+    "wt"), id.vars = c("am", "cyl"))
+cast(dfm, am + cyl + variable ~ ., dstats)
+
+
+# Section --7.2--
+
+# get Arthritis data
+library(vcd)
+head(Arthritis)
+
+
+
+# one way table
+
+mytable <- with(Arthritis, table(Improved))
+mytable
+prop.table(mytable)
+prop.table(mytable)*100
+
+
+# two way table
+
+mytable <- xtabs(~ Treatment+Improved, data=Arthritis)
+mytable
+margin.table(mytable, 1)
+prop.table(mytable, 1)
+margin.table(mytable, 2)
+prop.table(mytable, 2)
+prop.table(mytable)
+addmargins(mytable)
+addmargins(prop.table(mytable))
+addmargins(prop.table(mytable, 1), 2)
+addmargins(prop.table(mytable, 2), 1)
+
+
+# Listing 7.11 - Two-way table using CrossTable
+install.packages("gmodels")
+library(gmodels)
+CrossTable(Arthritis$Treatment, Arthritis$Improved)
+
+
+
+# Listing 7.12 - Three-way contingency table
+
+mytable <- xtabs(~ Treatment+Sex+Improved, data=Arthritis)
+mytable
+ftable(mytable)
+margin.table(mytable, 1)
+margin.table(mytable, 2)
+margin.table(mytable, 3)
+margin.table(mytable, c(1,3))
+ftable(prop.table(mytable, c(1, 2)))
+ftable(addmargins(prop.table(mytable, c(1, 2)), 3))
+
+ftable(addmargins(prop.table(mytable, c(1, 2)), 3)) * 100
+
+
+# Listing 7.13 - Chis-square test of independence
+
+library(vcd)
+mytable <- xtabs(~Treatment+Improved, data=Arthritis)
+chisq.test(mytable)
+mytable <- xtabs(~Improved+Sex, data=Arthritis)
+chisq.test(mytable)
+
+
+# Fisher's exact test
+
+mytable <- xtabs(~Treatment+Improved, data=Arthritis)
+fisher.test(mytable)
+
+# Chochran-Mantel-Haenszel test
+
+mytable <- xtabs(~Treatment+Improved+Sex, data=Arthritis)
+mantelhaen.test(mytable)
+
+
+# Listing 7.14 - Measures of association for a two-way table
+
+library(vcd)
+mytable <- xtabs(~Treatment+Improved, data=Arthritis)
+assocstats(mytable)
+
+
+# Listing 7.15 - converting a table into a flat file via table2flat
+
+table2flat <- function(mytable) {
+    df <- as.data.frame(mytable)
+    rows <- dim(df)[1]
+    cols <- dim(df)[2]
+    x <- NULL
+    for (i in 1:rows) {
+        for (j in 1:df$Freq[i]) {
+            row <- df[i, c(1:(cols - 1))]
+            x <- rbind(x, row)
+        }
+    }
+    row.names(x) <- c(1:dim(x)[1])
+    return(x)
+}
+
+
+
+# Listing 7.16 - Using table2flat with published data
+
+treatment <- rep(c("Placebo", "Treated"), 3)
+improved <- rep(c("None", "Some", "Marked"), each = 2)
+Freq <- c(29, 13, 7, 7, 7, 21)
+mytable <- as.data.frame(cbind(treatment, improved, Freq))
+mydata <- table2flat(mytable)
+head(mydata)
+
+
+
+
+# Listing 7.17 - Covariances and correlations
+
+states <- state.x77[, 1:6]
+cov(states)
+cor(states)
+cor(states, method="spearman")
+
+x <- states[, c("Population", "Income", "Illiteracy", "HS Grad")]
+y <- states[, c("Life Exp", "Murder")]
+cor(x, y)
+
+
+
+# partial correlation of population and murder rate, controlling
+# for income, illiteracy rate, and HS graduation rate
+install.packages("ggm")
+library(ggm)
+pcor(c(1, 5, 2, 3, 6), cov(states))
+
+# Listing 7.18 - Testing correlations for significance
+
+cor.test(states[, 3], states[, 5], method = "pearson")
+
+# Listing 7.19 - Correlation matrix and tests of significance via corr.test
+
+library(psych)
+corr.test(states, use = "complete")
+
+
+
+
+
+
